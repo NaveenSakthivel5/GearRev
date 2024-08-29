@@ -1,0 +1,44 @@
+.hero {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-end; /* Content aligned to the right */
+  flex-grow: 1;
+  padding: 100px 50px;
+  text-align: right;
+  height: 100vh; /* Set height to 100% of the viewport height */
+  box-sizing: border-box; /* Include padding in the height calculation */
+}
+
+.hero h1 {
+  font-size: 4rem;
+  line-height: 1.2;
+  margin: 0;
+}
+
+.hero p {
+  font-size: 1rem;
+  margin-top: 20px;
+  color: #aaa;
+  align-self: flex-start; /* Aligns paragraph to the left side */
+}
+
+/* Animation for letters */
+.letter {
+  display: inline-block;
+  opacity: 0;
+  transform: scale(0.5) translateY(-20px);
+  animation: blossom 0.5s forwards;
+  animation-delay: calc(var(--letter-index) * 0.05s); /* Adjusted delay for visibility */
+}
+
+@keyframes blossom {
+  from {
+    opacity: 0;
+    transform: scale(0.5) rotate(-30deg);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+}

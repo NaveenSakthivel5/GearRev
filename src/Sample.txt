@@ -1,0 +1,294 @@
+import React, { useEffect, useRef } from 'react';
+
+const ThreeJsVideoScroll = () => {
+  const videoRef = useRef(null);
+  const lastFrameTime = useRef(0);  // Track the time of the last frame
+  const targetVideoTime = useRef(0);  // Target video time for easing
+  const currentVideoTime = useRef(0);  // Current video time for easing
+
+  useEffect(() => {
+    // Wait for the video to load metadata to get correct video dimensions
+    videoRef.current.addEventListener('loadedmetadata', () => {
+      const video = videoRef.current;
+
+      const fps = 30;  // Target frames per second
+      const fpsInterval = 1000 / fps;
+
+      const easeInOutQuad = (t) => {
+        return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+      };
+
+      const updateVideoFrame = (now) => {
+        if (now - lastFrameTime.current >= fpsInterval) {
+          lastFrameTime.current = now;
+
+          const scrollPosition = window.scrollY;
+          const scrollHeight = document.body.scrollHeight - window.innerHeight;
+          const videoDuration = video.duration;
+
+          targetVideoTime.current = (scrollPosition / scrollHeight) * videoDuration;
+
+          // Apply faster easing to the video time transition
+          const delta = targetVideoTime.current - currentVideoTime.current;
+          currentVideoTime.current += delta * easeInOutQuad(0.4);  // Adjusted to 0.4 for faster easing
+          video.currentTime = currentVideoTime.current;
+        }
+        requestAnimationFrame(updateVideoFrame);
+      };
+
+      // Start the animation loop for scroll
+      requestAnimationFrame(updateVideoFrame);
+    });
+
+    // Clean up event listeners on unmount
+    return () => {
+      window.removeEventListener('scroll', () => {});
+    };
+  }, []);
+
+  return (
+    
+    
+    <video id="background-video" ref={videoRef}  muted playsInline style={{ width: '100%', height: 'auto' }}>
+      <source src="./gear.mp4" type="video/mp4" />
+    </video>
+     
+  );
+};
+
+export default ThreeJsVideoScroll;
+
+
+-------------------------------------------------------------------------------------------------------------------------------
+
+
+sticky 
+import React, { useEffect, useRef, useState } from 'react';
+
+const ThreeJsVideoScroll = () => {
+  const videoRef = useRef(null);
+  const containerRef = useRef(null);
+  const lastFrameTime = useRef(0);  // Track the time of the last frame
+  const targetVideoTime = useRef(0);  // Target video time for easing
+  const currentVideoTime = useRef(0);  // Current video time for easing
+  const [isSticky, setIsSticky] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const containerTop = containerRef.current.getBoundingClientRect().top;
+
+      if (containerTop <= 0 && !isSticky) {
+        setIsSticky(true);
+      } else if (containerTop > 0 && isSticky) {
+        setIsSticky(false);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+
+    videoRef.current.addEventListener('loadedmetadata', () => {
+      const video = videoRef.current;
+
+      const fps = 30;  // Target frames per second
+      const fpsInterval = 1000 / fps;
+
+      const easeInOutQuad = (t) => {
+        return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+      };
+
+      const updateVideoFrame = (now) => {
+        if (now - lastFrameTime.current >= fpsInterval) {
+          lastFrameTime.current = now;
+
+          const scrollPosition = window.scrollY;
+          const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;  // Total scrollable height
+          const videoDuration = video.duration;
+
+          // Map the entire scroll height to the video duration
+          targetVideoTime.current = (scrollPosition / scrollHeight) * videoDuration;
+
+          // Apply easing to the video time transition
+          const delta = targetVideoTime.current - currentVideoTime.current;
+          currentVideoTime.current += delta * easeInOutQuad(0.4);
+          video.currentTime = currentVideoTime.current;
+        }
+        requestAnimationFrame(updateVideoFrame);
+      };
+
+      // Start the animation loop for scroll
+      requestAnimationFrame(updateVideoFrame);
+    });
+
+    // Clean up event listeners on unmount
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, [isSticky]);
+
+  return (
+    <div ref={containerRef} style={{ height: 'auto', position: 'relative' }}>
+      <video
+        id="background-video"
+        ref={videoRef}
+        muted
+        playsInline
+        style={{
+          width: isSticky ? '300px' : '100%',
+          height: 'auto',
+          position: isSticky ? 'fixed' : 'relative',
+          top: isSticky ? '50%' : 'auto',
+          left: isSticky ? '0' : 'auto',
+          transform: isSticky ? 'translateY(-50%)' : 'none',
+          transition: 'all 0.5s ease-in-out',
+          zIndex: isSticky ? 1000 : 'auto',
+        }}
+      >
+        <source src="./gear.mp4" type="video/mp4" />
+      </video>
+    </div>
+  );
+};
+
+export default ThreeJsVideoScroll;
+----------------------------------------------------------------------------------------------------
+
+new one 
+import React, { useEffect, useRef } from 'react';
+
+const ThreeJsVideoScroll = () => {
+  const videoRef = useRef(null);
+  const lastFrameTime = useRef(0);  // Track the time of the last frame
+  const targetVideoTime = useRef(0);  // Target video time for easing
+  const currentVideoTime = useRef(0);  // Current video time for easing
+
+  useEffect(() => {
+    const handleMetadataLoaded = () => {
+      const video = videoRef.current;
+      const fps = 30;  // Target frames per second
+      const fpsInterval = 1000 / fps;
+
+      const easeInOutQuad = (t) => {
+        return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+      };
+
+      const updateVideoFrame = (now) => {
+        if (now - lastFrameTime.current >= fpsInterval) {
+          lastFrameTime.current = now;
+
+          const scrollPosition = window.scrollY;
+          const scrollHeight = document.body.scrollHeight - window.innerHeight;
+          const videoDuration = video.duration;
+          const totalDuration = videoDuration * 2;  // Assuming two videos with equal duration
+
+          // Calculate target time based on scroll
+          targetVideoTime.current = (scrollPosition / scrollHeight) * totalDuration;
+
+          // Apply faster easing to the video time transition
+          const delta = targetVideoTime.current - currentVideoTime.current;
+          currentVideoTime.current += delta * easeInOutQuad(0.4);  // Adjusted to 0.4 for faster easing
+
+          if (currentVideoTime.current < videoDuration) {
+            video.currentTime = currentVideoTime.current;
+          } else {
+            video.currentTime = videoDuration;  // Freeze video at the end
+          }
+        }
+        requestAnimationFrame(updateVideoFrame);
+      };
+
+      // Start the animation loop for scroll
+      requestAnimationFrame(updateVideoFrame);
+    };
+
+    const video = videoRef.current;
+    if (video) {
+      video.addEventListener('loadedmetadata', handleMetadataLoaded);
+    }
+
+    // Clean up event listeners on unmount
+    return () => {
+      if (video) video.removeEventListener('loadedmetadata', handleMetadataLoaded);
+    };
+  }, []);
+
+  return (
+    <video id="background-video-1" ref={videoRef} muted playsInline style={{ width: '100%', height: 'auto' }}>
+      <source src="/gear.mp4" type="video/mp4" />
+    </video>
+  );
+};
+
+export default ThreeJsVideoScroll;
+
+
+import React, { useEffect, useRef } from 'react';
+
+const ThreeJsVideo2 = () => {
+  const videoRef = useRef(null);
+  const lastFrameTime = useRef(0);  // Track the time of the last frame
+  const targetVideoTime = useRef(0);  // Target video time for easing
+  const currentVideoTime = useRef(0);  // Current video time for easing
+
+  useEffect(() => {
+    const video = videoRef.current;
+
+    const onMetadataLoaded = () => {
+      const fps = 30;  // Target frames per second
+      const fpsInterval = 1000 / fps;
+
+      const easeInOutQuad = (t) => {
+        return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+      };
+
+      const updateVideoFrame = (now) => {
+        if (now - lastFrameTime.current >= fpsInterval) {
+          lastFrameTime.current = now;
+
+          const scrollPosition = window.scrollY;
+          const scrollHeight = document.body.scrollHeight - window.innerHeight;
+          const videoDuration = video.duration;
+
+          targetVideoTime.current = (scrollPosition / scrollHeight) * videoDuration;
+
+          // Apply faster easing to the video time transition
+          const delta = targetVideoTime.current - currentVideoTime.current;
+          currentVideoTime.current += delta * easeInOutQuad(0.4);  // Adjusted to 0.4 for faster easing
+          video.currentTime = currentVideoTime.current;
+        }
+        requestAnimationFrame(updateVideoFrame);
+      };
+
+      // Start the animation loop for scroll
+      requestAnimationFrame(updateVideoFrame);
+    };
+
+    // Add metadata loaded event listener
+    if (video) {
+      video.addEventListener('loadedmetadata', onMetadataLoaded);
+    }
+
+    // Clean up event listener on unmount
+    return () => {
+      if (video) {
+        video.removeEventListener('loadedmetadata', onMetadataLoaded);
+      }
+    };
+  }, []);
+
+  return (
+    <video
+      id="background-video"
+      ref={videoRef}
+      muted
+      playsInline
+      style={{ width: '100%', height: 'auto' }}
+    >
+      <source src="/gear.mp4" type="video/mp4" />
+    </video>
+  );
+};
+
+export default ThreeJsVideo2;
+
+
+----------------------------------------------------------------------------------------

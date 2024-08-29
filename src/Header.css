@@ -1,0 +1,41 @@
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    background-color: #000;
+  }
+  
+  .logo img {
+    height: 50px;
+  }
+  
+  .menu {
+    flex-grow: 1;
+    display: flex;
+    justify-content: center;
+  }
+  
+  .menu ul {
+    list-style: none;
+    display: flex;
+    gap: 40px; /* Adjust spacing as needed */
+  }
+  
+  .menu ul li {
+    cursor: pointer;
+  }
+  
+  .contact {
+    display: flex;
+    justify-content: flex-end;
+  }
+  
+  .contact button {
+    background-color: transparent;
+    border: 2px solid #fff;
+    padding: 10px 20px;
+    color: #fff;
+    cursor: pointer;
+  }
+  
