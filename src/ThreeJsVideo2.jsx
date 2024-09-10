@@ -1,76 +1,68 @@
-import React, { useEffect, useRef, useState } from 'react';
+
+import React, { useEffect, useRef } from 'react';
 
 const ThreeJsVideo2 = () => {
   const videoRef = useRef(null);
-  const containerRef = useRef(null);
-  const [isSticky, setIsSticky] = useState(false);
-  const [lastScrollY, setLastScrollY] = useState(0);
+  const lastFrameTime = useRef(0);  // Track the time of the last frame
+  const targetVideoTime = useRef(0);  // Target video time for easing
+  const currentVideoTime = useRef(0);  // Current video time for easing
 
   useEffect(() => {
-    const handleScroll = () => {
-      const video = videoRef.current;
-      const container = containerRef.current;
-      if (!video || !container) return;
+    const video = videoRef.current;
 
-      const rect = container.getBoundingClientRect();
-      const windowHeight = window.innerHeight;
-      const scrollY = window.scrollY;
+    const onMetadataLoaded = () => {
+      const fps = 30;  // Target frames per second
+      const fpsInterval = 0 / fps;
 
-      if (rect.top <= 0) {
-        setIsSticky(true);
-      } else {
-        setIsSticky(false);
-      }
+      const easeInOutQuad = (t) => {
+        return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+      };
 
-      // Check if the video is within the viewport
-      if (rect.top <= windowHeight && rect.bottom >= 0) {
-        const scrollStart = scrollY + rect.top - windowHeight;
-        const scrollEnd = scrollY + rect.bottom;
-        const scrollRange = scrollEnd - scrollStart;
+      const updateVideoFrame = (now) => {
+        if (now - lastFrameTime.current >= fpsInterval) {
+          lastFrameTime.current = now;
 
-        const videoDuration = video.duration;
-        const scrollRelativeToVideo = (scrollY - scrollStart) / scrollRange;
-        const newTime = videoDuration * Math.min(Math.max(scrollRelativeToVideo, 0), 1);
+          const scrollPosition = window.scrollY;
+          const scrollHeight = document.body.scrollHeight - window.innerHeight;
+          const videoDuration = video.duration;
 
-        if (scrollY > lastScrollY) {
-          // Scrolling down
-          video.currentTime = newTime;
-        } else {
-          // Scrolling up
-          video.currentTime = videoDuration - newTime;
+          targetVideoTime.current = (scrollPosition / scrollHeight) * videoDuration;
+
+          // Apply faster easing to the video time transition
+          const delta = targetVideoTime.current - currentVideoTime.current;
+          currentVideoTime.current += delta * easeInOutQuad(0.4);  // Adjusted to 0.4 for faster easing
+          video.currentTime = currentVideoTime.current;
         }
+        requestAnimationFrame(updateVideoFrame);
+      };
 
-        setLastScrollY(scrollY);
+      // Start the animation loop for scroll
+      requestAnimationFrame(updateVideoFrame);
+    };
+
+    // Add metadata loaded event listener
+    if (video) {
+      video.addEventListener('loadedmetadata', onMetadataLoaded);
+    }
+
+    // Clean up event listener on unmount
+    return () => {
+      if (video) {
+        video.removeEventListener('loadedmetadata', onMetadataLoaded);
       }
     };
-
-    window.addEventListener('scroll', handleScroll);
-
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-    };
-  }, [lastScrollY]);
+  }, []);
 
   return (
-    <div ref={containerRef} style={{ minHeight: '100vh', position: 'relative' }}>
-      <video
-        ref={videoRef}
-        muted
-        playsInline
-        style={{
-          width: '100%',
-          height: 'auto',
-          objectFit: 'cover',
-          position: isSticky ? 'fixed' : 'relative',
-          top: isSticky ? '0' : 'auto',
-          left: isSticky ? '0' : 'auto',
-          zIndex: isSticky ? 1000 : 'auto',
-          transition: 'position 0.3s ease-in-out',
-        }}
-      >
-        <source src="/Gear.webm" type="video/webm" />
-      </video>
-    </div>
+    <video
+      id="background-video"
+      ref={videoRef}
+      muted
+      playsInline
+      style={{ width: '100%', height: 'auto' }}
+    >
+      <source src="/GearRev.mp4" type="video/mp4" />
+    </video>
   );
 };
 

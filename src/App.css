@@ -14,36 +14,29 @@ body, html, #root {
   height: 100vh;
 }
 
-.content {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-grow: 1;
+#background-video-1 {
+  align-content: center;
 }
 
 .video-container {
-  width: 100%;
-  height: auto;
-}
-
-#background-video {
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: cover;
-}
-
-.video-container {
-  position: relative;
-  height: 100vh; /* Full height of the viewport */
   display: flex;
   justify-content: center;
   align-items: center;
+  height: 200vh; /* Provide enough scrollable space */
+  padding-top: 20vh; /* Add space before the video appears */
 }
 
 .sticky-video {
-  position: sticky;
-  top: 50%; /* Stick at the center of the viewport */
+  top: 50%; /* Stick the video in the middle of the viewport */
   transform: translateY(-50%); /* Center the video vertically */
-  width: 80%; /* Adjust width as needed */
+  width: 50vw; /* Set the width of the video */
   height: auto;
+  object-fit: cover; /* Ensure the video maintains its aspect ratio */
+  z-index: 1; /* Make sure it's on top of other elements */
+}
+
+.sticky-video.unstuck {
+  position: relative; /* Change position to relative after playback */
+  top: auto;
+  transform: none; /* Reset the transform */
 }
